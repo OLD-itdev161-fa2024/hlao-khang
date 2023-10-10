@@ -71,7 +71,6 @@ app.post(
 
         // save to db and return
         await user.save();
-        res.send("User successfully registerd");
 
         // generate a jwt token
         const payload = {
