@@ -45,52 +45,47 @@ app.post(
     ).isLength({ min: 6 }),
   ],
   async (req, res) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(422).json({ errors: errors.array() });
-    } else {
-      const { name, email, password } = req.body;
-      try {
-        let user = await User.findOne({ email: email });
-        if (user) {
-          return res
-            .status(400)
-            .json({ errors: [{ msg: "User already exists" }] });
-        }
-
-        // create new user
-        user = new User({
-          name: name,
-          email: email,
-          password: password,
-        });
-
-        // Encrypt password
-        const salt = await bcrypt.genSalt(10);
-        user.password = await bcrypt.hash(password, salt);
-
-        // save to db and return
-        await user.save();
-
-        // generate a jwt token
-        const payload = {
-          user: {
-            id: user.id,
-          },
-        };
-
-        jwt.sign(
-          payload,
-          config.get("jwtSecret"),
-          { expiresIn: "10h" },
-          (err, token) => {
-            if (err) throw err;
-            res.json({ token: token });
-          }
-        );
-      } catch (error) {
-        res.status(500).send("Server error");
+    const { name, email, password } = req.body;
+    try {
+      let user = await User.findOne({ email: email });
+      if (user) {
+        return res
+          .status(400)
+          .json({ errors: [{ msg: "User already exists" }] });
       }
+
+      // create new user
+      user = new User({
+        name: name,
+        email: email,
+        password: password,
+      });
+
+      // Encrypt password
+      const salt = await bcrypt.genSalt(10);
+      user.password = await bcrypt.hash(password, salt);
+
+      // save to db and return
+      await user.save();
+
+      // generate a jwt token
+      const payload = {
+        user: {
+          id: user.id,
+        },
+      };
+
+      jwt.sign(
+        payload,
+        config.get("jwtSecret"),
+        { expiresIn: "10h" },
+        (err, token) => {
+          if (err) throw err;
+          res.json({ token: token });
+        }
+      );
+    } catch (error) {
+      res.status(500).send("Server error");
     }
   }
 );
