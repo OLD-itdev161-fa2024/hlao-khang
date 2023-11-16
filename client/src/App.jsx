@@ -81,8 +81,14 @@ const App = () => {
       <main>
         <Routes>
           <Route path='/' element={<Home data={data} />} />
-          <Route path='/register' element={<Register />} />
-          <Route path='/login' element={<Login />} />
+          <Route
+            path='/register'
+            element={<Register authenticateUser={authenticateUser} />}
+          />
+          <Route
+            path='/login'
+            element={<Login authenticateUser={authenticateUser} />}
+          />
         </Routes>
       </main>
     </div>

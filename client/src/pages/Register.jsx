@@ -1,13 +1,16 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
-export default function Register() {
-  const [userData, setUserData] = useState({
+export default function Register({ authenticateUser }) {
+  const navigate = useNavigate();
+  let [userData, setUserData] = useState({
     name: "",
     email: "",
     password: "",
     passwordConfirm: "",
   });
+  let [errors, setErrors] = useState([]);
 
   const { name, email, password, passwordConfirm } = userData;
 
@@ -19,8 +22,7 @@ export default function Register() {
     });
   };
 
-  const register = async () => {
-    console.log(userData);
+  const registerUser = async () => {
     if (!name || !email || !password || !passwordConfirm)
       return console.log("Make sure all fields have a value");
 
@@ -39,16 +41,21 @@ export default function Register() {
             "Content-Type": "application/json",
           },
         };
-        const body = JSON.stringify(newUser);
+
         const res = await axios.post(
           "http://localhost:5000/api/users",
-          body,
+          JSON.stringify(newUser),
           config
         );
-        console.log(res.data);
+
+        localStorage.setItem("token", res.data.token);
+        navigate("/");
       } catch (error) {
-        console.log(error);
+        localStorage.removeItem("token");
+        setErrors(error.response.data.errors);
       }
+
+      authenticateUser();
     }
   };
 
@@ -91,7 +98,12 @@ export default function Register() {
           onChange={(e) => onChange(e)}
         />
       </div>
-      <button onClick={() => register()}>Register</button>
+      <button onClick={() => registerUser()}>Register</button>
+      <div id='errors'>
+        {errors.map((error, index) => {
+          return <p key={index}>{error.msg}</p>;
+        })}
+      </div>
     </>
   );
 }
