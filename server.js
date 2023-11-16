@@ -100,7 +100,7 @@ app.get("/api/auth", auth, async (req, res) => {
  * @desc Login user
  */
 app.post(
-  "api/login",
+  "/api/login",
   [
     check("email", "Please enter a valid email").isEmail(),
     check("password", "A password is required").exists(),
