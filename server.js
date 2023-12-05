@@ -3,6 +3,7 @@ import connectDatabase from "./config/db";
 import { check, validationResult } from "express-validator";
 import cors from "cors";
 import User from "./models/User";
+import Post from "./models/Post";
 import bcrypt from "bcryptjs";
 import config from "config";
 import jwt from "jsonwebtoken";
@@ -148,6 +149,47 @@ const returnToken = (user, res) => {
     }
   );
 };
+
+// Post endpoints
+/**
+ * @route Post api/posts
+ * @desc Create Post
+ */
+app.post(
+  "/api/posts",
+  [
+    auth,
+    [
+      check("title", "Title text is required").not().isEmpty(),
+      check("body", "Body text is required").not().isEmpty(),
+    ],
+  ],
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      res.status(400).json({ errors: errors.array() });
+    } else {
+      const { title, body } = req.body;
+      try {
+        // Get user who created post
+        const user = await User.findById(req.user.id);
+
+        // Create a new post
+        const post = new Post({
+          user: user.id,
+          title: title,
+          body: body,
+        });
+
+        await post.save();
+        res.json(post);
+      } catch (error) {
+        console.error(error);
+        res.status(500).send("Server error");
+      }
+    }
+  }
+);
 
 // connection listener
 const port = 5000;
